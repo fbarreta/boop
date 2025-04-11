@@ -17,6 +17,7 @@ player = {
 	y = 0
 }
 mtx = {}
+debug = 'debug'
 -->8
 function _init()
 	color(17)
@@ -32,12 +33,21 @@ function _draw()
 	cls(7)
 	drawgrid()
 	drawplayer()
+	//findboop()
+	print(debug,0,122,8)
 end
 -->8
 function drawplayer()
 	if mtx[player.x][player.y] == 0 then
 		drawsprite(spr_cursor_k1,player.x,player.y)
 	end
+	rect(
+	 center + space + (player.x*size) - 1,
+		center + space + (player.y*size) - 1,
+		center + (player.x*size) + size + 1,
+		center + (player.y*size) + size + 1,
+		8
+	)
 end
 
 function drawgrid()
@@ -102,7 +112,7 @@ function moveplayer()
 		end
 	end
 	if btnp(4) then
-		mtx[player.x][player.y] = 1
+		placepiece()
 	end
 end
 
@@ -158,6 +168,173 @@ function fillmtx()
 		end
 	end
 end
+
+function placepiece()
+	if mtx[player.x][player.y] == 0 then
+		mtx[player.x][player.y] = 1
+		checkboop()
+	end
+end
+
+function checkboop()
+	debug = ''
+	if
+		player.x <= 4 and
+		mtx[player.x+1][player.y] == 1 then
+			boop('r',player.x+1, player.y)
+	end
+	if
+		player.x > 0 and
+		mtx[player.x-1][player.y] == 1 then
+			boop('l',player.x-1, player.y)
+	end
+	if
+		player.y <= 4 and
+		mtx[player.x][player.y+1] == 1 then
+			boop('d',player.x, player.y+1)
+	end
+	if
+		player.y >= 0 and
+		mtx[player.x][player.y-1] == 1 then
+			boop('u',player.x, player.y-1)
+	end
+	if
+		player.y >= 0 and
+		player.x <= 4 and
+		mtx[player.x+1][player.y-1] == 1 then
+			boop('ur',player.x+1, player.y-1)
+	end
+	if
+		player.y >= 0 and
+		player.x > 0 and
+		mtx[player.x-1][player.y-1] == 1 then
+			boop('ul',player.x-1, player.y-1)
+	end
+	if
+		player.y <= 4 and
+		player.x <= 4 and
+		mtx[player.x+1][player.y+1] == 1 then
+			boop('dr',player.x+1, player.y+1)
+	end
+	if
+		player.y <= 4 and
+		player.x > 0 and
+		mtx[player.x-1][player.y+1] == 1 then
+			boop('dl',player.x-1, player.y+1)
+	end
+end
+
+function findboop()
+	
+	local rx = player.x + 1
+	local ry = player.y
+	rect(
+	 center + space + (rx*size) - 1,
+		center + space + (ry*size) - 1,
+		center + (rx*size) + size + 1,
+		center + (ry*size) + size + 1,
+		10
+	)
+end
+
+function boop(dir,x,y)
+	debug = 'boop x: ' .. 
+											player.x ..
+	 									' y: ' .. 
+	 									player.y
+	if dir == 'r' then
+		local fx = x + 1
+		if	x < 5 then
+			if mtx[fx][y] == 0 then
+					mtx[x][y] = 0
+					mtx[fx][y] = 1
+			end
+		elseif x == 5 then
+			mtx[x][y] = 0
+		end
+	end
+	if dir == 'l' then
+		local fx = x - 1
+		if	x > 0 then
+			if mtx[fx][y] == 0 then
+					mtx[x][y] = 0
+					mtx[fx][y] = 1
+			end
+		elseif x == 0 then
+			mtx[x][y] = 0
+		end
+	end
+	if dir == 'd' then
+		local fy = y + 1
+		if	y < 5 then
+			if mtx[x][fy] == 0 then
+					mtx[x][y] = 0
+					mtx[x][fy] = 1
+			end
+		elseif y == 5 then
+			mtx[x][y] = 0
+		end
+	end
+	if dir == 'u' then
+		local fy = y - 1
+		if	y > 0 then
+			if mtx[x][fy] == 0 then
+					mtx[x][y] = 0
+					mtx[x][fy] = 1
+			end
+		elseif y == 0 then
+			mtx[x][y] = 0
+		end
+	end
+	if dir == 'ur' then
+		local fy = y - 1
+		local fx = x + 1
+		if	y > 0 and x < 5 then
+			if mtx[fx][fy] == 0 then
+					mtx[x][y] = 0
+					mtx[fx][fy] = 1
+			end
+		elseif fy <= 0 or fx >= 5 then
+			mtx[x][y] = 0
+		end
+	end
+	if dir == 'ul' then
+		local fy = y - 1
+		local fx = x - 1
+		if	y > 0 and x > 0 then
+			if mtx[fx][fy] == 0 then
+					mtx[x][y] = 0
+					mtx[fx][fy] = 1
+			end
+		elseif fy <= 0 or fx >= 0 then
+			mtx[x][y] = 0
+		end
+	end
+	if dir == 'dr' then
+		local fy = y + 1
+		local fx = x + 1
+		if	y > 0 and x < 5 then
+			if mtx[fx][fy] == 0 then
+					mtx[x][y] = 0
+					mtx[fx][fy] = 1
+			end
+		elseif fy >= 5 or fx >= 5 then
+			mtx[x][y] = 0
+		end
+	end
+	if dir == 'dl' then
+		local fy = y + 1
+		local fx = x - 1
+		if	y > 0 and x > 0 then
+			if mtx[fx][fy] == 0 then
+					mtx[x][y] = 0
+					mtx[fx][fy] = 1
+			end
+		elseif fy >= 5 or fx <= 0 then
+			mtx[x][y] = 0
+		end
+	end
+end
 __gfx__
 00000000303333303333333333330333333033333033333033333333333303333330333300000000000000000000000000000000000000000000000000000000
 000000000f03330f033333333330f033330f03330603330603333333333060333306033300000000000000000000000000000000000000000000000000000000
@@ -191,3 +368,5 @@ __gfx__
 0000000033ffffffffff33333ffffffffffffff33366666666663333366666666666666300000000000000000000000000000000000000000000000000000000
 0000000033ffffffffff333333ffffffffffff333366666666663333336666666666663300000000000000000000000000000000000000000000000000000000
 0000000033ffffffffff333333ffffffffffff333366666666663333336666666666663300000000000000000000000000000000000000000000000000000000
+__sfx__
+0001000000000010500405007050090500c0500f05011050140501605018050190501a0501c050000001d0501f050200501f0501d0501b0500000019050160501305010050000000000000000000000000000000
