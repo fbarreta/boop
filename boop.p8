@@ -1,7 +1,8 @@
 pico-8 cartridge // http://www.pico-8.com
 version 41
 __lua__
-center = 5
+centerx = 5
+centery = 0
 space = 2
 size = 19
 spr_k1 = 1
@@ -16,8 +17,18 @@ player = {
 	x = 1,
 	y = 0
 }
+player1 = {
+	kittens = 8,
+	cats = 0,
+	cursortype = 'k'
+}
+player2 = {
+	kittens = 8,
+	cats = 0,
+	cursortype = 'k'
+}
 mtx = {}
-debug = 'debug'
+debug = ""
 -->8
 function _init()
 	color(17)
@@ -33,45 +44,53 @@ function _draw()
 	cls(7)
 	drawgrid()
 	drawplayer()
+	drawui()
 	//findboop()
 	print(debug,0,122,8)
 end
 -->8
 function drawplayer()
+	local sprite = spr_cursor_c1;
+	if player1.cursortype == 'k' then
+		sprite = spr_cursor_k1
+	else
+		sprite = spr_cursor_c1
+	end
+
 	if mtx[player.x][player.y] == 0 then
-		drawsprite(spr_cursor_k1,player.x,player.y)
+		drawsprite(sprite,player.x,player.y)
 	end
 	rect(
-	 center + space + (player.x*size) - 1,
-		center + space + (player.y*size) - 1,
-		center + (player.x*size) + size + 1,
-		center + (player.y*size) + size + 1,
+	 centerx + space + (player.x*size) - 1,
+		centery + space + (player.y*size) - 1,
+		centerx + (player.x*size) + size + 1,
+		centery + (player.y*size) + size + 1,
 		8
 	)
 end
 
 function drawgrid()
 	rectfill(
-	 center + space,
-		center + space,
-		center + space + 112,
-		center + space + 112,
+	 centerx + space,
+		centery + space,
+		centerx + space + 112,
+		centery + space + 112,
 		1
 	)
 	rect(
-	 center + space-1,
-		center + space-1,
-		center + space + 113,
-		center + space + 113,
+	 centerx + space-1,
+		centery + space-1,
+		centerx + space + 113,
+		centery + space + 113,
 		1
 	)
 	for j = 0, 5 do
 		for i = 0, 5 do
 			rectfill(
-			 center + space + (j*size),
-				center + space + (i*size),
-				center + (j*size) + size,
-				center + (i*size) + size,
+			 centerx + space + (j*size),
+				centery + space + (i*size),
+				centerx + (j*size) + size,
+				centery + (i*size) + size,
 				12
 			)
 			if mtx[j][i] == 1 then
@@ -86,11 +105,24 @@ function drawsprite(s, x, y)
 	palt(0,false)
 	spr(
 		s,
-	 1 + center + space + (x*size),
-		1 + center + space + (y*size),
+	 1 + centerx + space + (x*size),
+		1 + centery + space + (y*size),
 		2,
 		2
 	)
+end
+
+function drawui()
+	local p1kittens = " kITTENS: ".. player1.kittens
+	local p1cats = " cATS:    ".. player1.cats
+	
+	local p2kittens = " kITTENS: ".. player2.kittens
+	local p2cats = " cATS:    ".. player2.cats
+
+	print(p1kittens,2,117,9)
+	print(p1cats,2,123,9)
+	print(p2kittens,78,117,5)
+	print(p2cats,78,123,5)
 end
 -->8
 function moveplayer()
@@ -112,7 +144,28 @@ function moveplayer()
 		end
 	end
 	if btnp(4) then
-		placepiece()
+		if canplace() then
+			placepiece()
+		end
+	end
+	if btnp(5) then
+		changecursor()
+	end
+end
+
+function changecursor()
+	if player1.cursortype == 'k' then
+		player1.cursortype = 'c'
+	else
+		player1.cursortype = 'k'
+	end
+end
+
+function canplace()
+	if player1.kittens > 0 then
+		return true
+	else
+		return false
 	end
 end
 
@@ -172,12 +225,35 @@ end
 function placepiece()
 	if mtx[player.x][player.y] == 0 then
 		mtx[player.x][player.y] = 1
+		removepiece()
 		checkboop()
+		local p = check3(1)
+		if #p == 3 then
+			promote(p)
+		end
 	end
 end
 
+function promote(p)
+	for i = 1, #p do
+		local x = p[i][1]
+		local y = p[i][2]
+		mtx[x][y] = 0
+		player1.kittens += 1
+	end
+	player1.kittens -= 3
+	player1.cats += 3
+end
+
+function removepiece()
+	player1.kittens -= 1
+end
+
+function addpiece()
+	player1.kittens += 1
+end
+
 function checkboop()
-	debug = ''
 	if
 		player.x <= 4 and
 		mtx[player.x+1][player.y] == 1 then
@@ -238,10 +314,6 @@ function findboop()
 end
 
 function boop(dir,x,y)
-	debug = 'boop x: ' .. 
-											player.x ..
-	 									' y: ' .. 
-	 									player.y
 	if dir == 'r' then
 		local fx = x + 1
 		if	x < 5 then
@@ -251,6 +323,7 @@ function boop(dir,x,y)
 			end
 		elseif x == 5 then
 			mtx[x][y] = 0
+			addpiece()
 		end
 	end
 	if dir == 'l' then
@@ -262,6 +335,7 @@ function boop(dir,x,y)
 			end
 		elseif x == 0 then
 			mtx[x][y] = 0
+			addpiece()
 		end
 	end
 	if dir == 'd' then
@@ -273,6 +347,7 @@ function boop(dir,x,y)
 			end
 		elseif y == 5 then
 			mtx[x][y] = 0
+			addpiece()
 		end
 	end
 	if dir == 'u' then
@@ -284,6 +359,7 @@ function boop(dir,x,y)
 			end
 		elseif y == 0 then
 			mtx[x][y] = 0
+			addpiece()
 		end
 	end
 	if dir == 'ur' then
@@ -296,6 +372,7 @@ function boop(dir,x,y)
 			end
 		elseif fy <= 0 or fx >= 5 then
 			mtx[x][y] = 0
+			addpiece()
 		end
 	end
 	if dir == 'ul' then
@@ -308,6 +385,7 @@ function boop(dir,x,y)
 			end
 		elseif fy <= 0 or fx >= 0 then
 			mtx[x][y] = 0
+			addpiece()
 		end
 	end
 	if dir == 'dr' then
@@ -320,6 +398,7 @@ function boop(dir,x,y)
 			end
 		elseif fy >= 5 or fx >= 5 then
 			mtx[x][y] = 0
+			addpiece()
 		end
 	end
 	if dir == 'dl' then
@@ -332,8 +411,46 @@ function boop(dir,x,y)
 			end
 		elseif fy >= 5 or fx <= 0 then
 			mtx[x][y] = 0
+			addpiece()
 		end
 	end
+end
+-->8
+function check3(p)
+	local cols, rows = 5, 5
+	for x = 0, rows do
+		for y = 0, cols do
+			if y + 2 < cols then
+				if mtx[x][y] == p and
+							mtx[x][y+1] == p and
+							mtx[x][y+2] == p then
+								return {{x, y},{x,y+1},{x,y+2}}
+				end
+			end
+			if x + 2 < rows then
+				if mtx[x][y] == p and
+							mtx[x+1][y] == p and
+							mtx[x+2][y] == p then
+								return {{x, y},{x+1,y},{x+2,y}}
+				end
+			end
+			if x + 2 < rows and y + 2 < cols then
+				if mtx[x][y] == p and
+							mtx[x+1][y+1] == p and
+							mtx[x+2][y+2] == p then
+								return {{x, y},{x+1,y+1},{x+2,y+2}}
+				end
+			end
+			if x + 2 < rows and y - 2 >= 0 then
+				if mtx[x][y] == p and
+							mtx[x+1][y-1] == p and
+							mtx[x+2][y-2] == p then
+								return {{x, y},{x+1,y-1},{x+2,y-2}}
+				end
+			end
+		end
+	end
+	return {{9,8}}
 end
 __gfx__
 00000000303333303333333333330333333033333033333033333333333303333330333300000000000000000000000000000000000000000000000000000000
