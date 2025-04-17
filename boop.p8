@@ -47,12 +47,14 @@ activeplayer = player1
 mtx = {}
 gamestarted = false
 gameover = 0
+multicontrollers = false
 debug = ""
 -->8
 function _init()
 	color(17)
 	palt(0,true)
 	restartgame()
+	menuitem(1, "uSE ONE CONTROLLER", onecontroller)
 end
 
 function _update()
@@ -230,6 +232,16 @@ function restartgame()
 	player2.kittens = 8
 	player2.cats = 0
 	player2.cursortype = 'k'
+	player.x = 0
+	player.y = 0
+end
+
+function onecontroller()
+	if multicontrollers == true then
+		multicontrollers = false
+	else
+		multicontrollers = true
+	end
 end
 -->8
 function moveplayer()
@@ -238,6 +250,9 @@ function moveplayer()
 		controller = 0
 	elseif activeplayer == player2 then
 		controller = 1
+	end
+	if multicontrollers == false then
+		controller = nil
 	end
 	if btnp(0,controller) then
 		if checkboundaries("l") then
@@ -368,6 +383,7 @@ function changeplayer()
 end
 
 function promote(p,player)
+	sfx(2)
 	local ks = 0
 	local cs = 0
 	local p_player
@@ -433,12 +449,14 @@ function canboop(o, p)
 end
 
 function checkboop()
+	local playboopsound = false
 	local o = mtx[player.x][player.y]
 	if
 		player.x <= 4 and
 		mtx[player.x+1][player.y] > 0 then
 			local p = mtx[player.x+1][player.y]
 			if canboop(o, p) then
+				playboopsound = true
 				boop('r',player.x+1, player.y,p)
 			end
 	end
@@ -447,6 +465,7 @@ function checkboop()
 		mtx[player.x-1][player.y] > 0 then
 			local p = mtx[player.x-1][player.y]
 			if canboop(o, p) then
+				playboopsound = true
 				boop('l',player.x-1, player.y,p)
 			end
 	end
@@ -455,6 +474,7 @@ function checkboop()
 		mtx[player.x][player.y+1] > 0 then
 			local p = mtx[player.x][player.y+1]
 			if canboop(o, p) then
+				playboopsound = true
 				boop('d',player.x, player.y+1,p)
 			end
 	end
@@ -463,6 +483,7 @@ function checkboop()
 		mtx[player.x][player.y-1] > 0 then
 			local p = mtx[player.x][player.y-1]
 			if canboop(o, p) then
+				playboopsound = true
 				boop('u',player.x, player.y-1,p)
 			end
 	end
@@ -472,6 +493,7 @@ function checkboop()
 		mtx[player.x+1][player.y-1] > 0 then
 			local p = mtx[player.x+1][player.y-1]
 			if canboop(o, p) then
+				playboopsound = true
 				boop('ur',player.x+1, player.y-1,p)
 			end
 	end
@@ -481,6 +503,7 @@ function checkboop()
 		mtx[player.x-1][player.y-1] > 0 then
 			local p = mtx[player.x-1][player.y-1]
 			if canboop(o, p) then
+				playboopsound = true
 				boop('ul',player.x-1, player.y-1,p)
 			end
 	end
@@ -490,6 +513,7 @@ function checkboop()
 		mtx[player.x+1][player.y+1] > 0 then
 			local p = mtx[player.x+1][player.y+1]
 			if canboop(o, p) then
+				playboopsound = true
 				boop('dr',player.x+1, player.y+1,p)
 			end
 	end
@@ -499,8 +523,14 @@ function checkboop()
 		mtx[player.x-1][player.y+1] > 0 then
 			local p = mtx[player.x-1][player.y+1]
 			if canboop(o, p) then
+				playboopsound = true
 				boop('dl',player.x-1, player.y+1,p)
 			end
+	end
+	if playboopsound == true then
+		sfx(1)
+	else
+		sfx(0)
 	end
 end
 
@@ -583,12 +613,12 @@ function boop(dir,x,y,p)
 	if dir == 'dr' then
 		local fy = y + 1
 		local fx = x + 1
-		if	y > 0 and x < 5 then
+		if	y < 5 and x < 5 then
 			if mtx[fx][fy] == 0 then
 					mtx[x][y] = 0
 					mtx[fx][fy] = p
 			end
-		elseif fy >= 5 or fx >= 5 then
+		elseif fy > 5 or fx >= 5 then
 			addpiece(mtx[x][y])
 			mtx[x][y] = 0
 		end
@@ -596,12 +626,12 @@ function boop(dir,x,y,p)
 	if dir == 'dl' then
 		local fy = y + 1
 		local fx = x - 1
-		if	y > 0 and x > 0 then
+		if	y < 5 and x > 0 then
 			if mtx[fx][fy] == 0 then
 					mtx[x][y] = 0
 					mtx[fx][fy] = p
 			end
-		elseif fy >= 5 or fx <= 0 then
+		elseif fy > 5 or fx <= 0 then
 			addpiece(mtx[x][y])
 			mtx[x][y] = 0
 		end
@@ -774,4 +804,6 @@ c030cccc03333333330cccc033333333333333333333333333333333333333330000000000000000
 33333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333399999333333333333333333333
 33333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333339993333333333333333333333
 __sfx__
-0001000000000010500405007050090500c0500f05011050140501605018050190501a0501c050000001d0501f050200501f0501d0501b0500000019050160501305010050000000000000000000000000000000
+000100000000000000213501f3501c3501a3501735016350113500e3500b350073500335000350003500025000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000100000000000000000000105004050080500e050130501505017050180501b0501c0501d0501d0501c050000001b05000000190500000018050170501505014050120500d0500805000050000000000000000
+010400000000000000083500f35013350173501c350213500000000000083500f35013350173501c350213500000000000083500f35013350173501c350213500000000000000000000000000000000000000000
