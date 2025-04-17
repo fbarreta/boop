@@ -47,7 +47,7 @@ activeplayer = player1
 mtx = {}
 gamestarted = false
 gameover = 0
-multicontrollers = false
+multicontrollers = true
 debug = ""
 -->8
 function _init()
