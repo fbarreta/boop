@@ -22,15 +22,16 @@ player = {
 	y = 0
 }
 player1 = {
-	kittens = 8,
-	cats = 0,
+	kittens = 5,
+	cats = 3,
 	cursortype = 'k',
 	spritek = p1k,
 	spritec = p1c,
 	cursork = spr_cursor_k1,
 	cursorc = spr_cursor_c1,
 	kindex = p1k,
-	cindex = p1c
+	cindex = p1c,
+	maxcats = 0
 }
 player2 = {
 	kittens = 8,
@@ -41,24 +42,26 @@ player2 = {
 	cursork = spr_cursor_k2,
 	cursorc = spr_cursor_c2,
 	kindex = p2k,
-	cindex = p2c
+	cindex = p2c,
+	maxcats = 0
 }
 activeplayer = player1
 mtx = {}
 gamestarted = false
 gameover = 0
-multicontrollers = true
+multicontrollers = false
 debug = ""
+menulabel = "2 controllers"
 -->8
 function _init()
 	color(17)
 	palt(0,true)
 	restartgame()
-	menuitem(1, "uSE ONE CONTROLLER", onecontroller)
 end
 
 function _update()
 	moveplayer()
+	menuitem(1, menulabel, onecontroller)
 end
 
 function _draw()
@@ -84,9 +87,9 @@ function drawplayer()
 	end
 	local rectcolor = 8
 	if activeplayer == player1 then
-		rectcolor = 15
+		rectcolor = 9
 	else
-		rectcolor = 6
+		rectcolor = 5
 	end
 	rect(
 	 centerx + space + (player.x*size) - 1,
@@ -239,8 +242,10 @@ end
 function onecontroller()
 	if multicontrollers == true then
 		multicontrollers = false
+		menulabel = "2 controllers"
 	else
 		multicontrollers = true
+		menulabel = "1 controller"
 	end
 end
 -->8
@@ -371,6 +376,15 @@ function placepiece()
 			promote(p2,2)
 		end
 	end
+	if activeplayer.maxcats == 8 and
+				activeplayer.cats == 0 then
+				if activeplayer == player1 then
+					gameover = 1
+				end
+				if activeplayer == player2 then
+					gameover = 2
+				end
+	end
 	changeplayer()
 end
 
@@ -418,6 +432,8 @@ function promote(p,player)
 	
 	p_player.kittens -= ks
 	p_player.cats += ks
+	p_player.maxcats += ks
+	debug = p_player.maxcats
 end
 
 function removepiece()
@@ -639,31 +655,31 @@ function boop(dir,x,y,p)
 end
 -->8
 function check3(p1, p2)
-	local cols, rows = 5, 5
+	local cols, rows = 5,5
 	for x = 0, rows do
 		for y = 0, cols do
-			if y + 2 < cols then
+			if y + 1 < cols then
 				if (mtx[x][y] == p1 or mtx[x][y] == p2) and
 							(mtx[x][y+1] == p1 or mtx[x][y+1] == p2) and
 							(mtx[x][y+2] == p1 or mtx[x][y+2] == p2) then
 								return {{x, y},{x,y+1},{x,y+2}}
 				end
 			end
-			if x + 2 < rows then
+			if x + 1 < rows then
 				if (mtx[x][y] == p1 or mtx[x][y] == p2) and
 							(mtx[x+1][y] == p1 or mtx[x+1][y] == p2) and
 							(mtx[x+2][y] == p1 or mtx[x+2][y] == p2) then
 								return {{x, y},{x+1,y},{x+2,y}}
 				end
 			end
-			if x + 2 < rows and y + 2 < cols then
+			if x + 1 < rows and y + 2 < cols then
 				if (mtx[x][y] == p1 or mtx[x][y] == p2) and
 							(mtx[x+1][y+1] == p1 or mtx[x+1][y+1] == p2) and
 							(mtx[x+2][y+2] == p1 or mtx[x+2][y+2] == p2) then
 								return {{x, y},{x+1,y+1},{x+2,y+2}}
 				end
 			end
-			if x + 2 < rows and y - 2 >= 0 then
+			if x + 1 < rows and y - 2 >= 0 then
 				if (mtx[x][y] == p1 or mtx[x][y] == p2) and
 							(mtx[x+1][y-1] == p1 or mtx[x+1][y-1] == p2) and
 							(mtx[x+2][y-2] == p1 or mtx[x+2][y-2] == p2) then
