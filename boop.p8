@@ -52,7 +52,6 @@ mtx = {}
 gamestarted = false
 gameover = 0
 multicontrollers = false
-debug = ""
 menulabel = "2 controllers"
 -->8
 function _init()
@@ -73,7 +72,6 @@ function _draw()
 	drawui()
 	drawsplash()
 	drawgameover()
-	print(debug,0,122,8)
 end
 -->8
 function drawplayer()
@@ -440,7 +438,6 @@ function promote(p,player)
 	p_player.kittens -= ks
 	p_player.cats += ks
 	p_player.maxcats += ks
-	debug = p_player.maxcats
 end
 
 function removepiece()
