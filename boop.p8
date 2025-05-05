@@ -305,6 +305,11 @@ function changecursor()
 end
 
 function canplace()
+	local x = player.x
+	local y = player.y
+	if mtx[x][y] > 0 then
+		return false
+	end
 	if activeplayer.cursortype == 'k' then
 		if activeplayer.kittens > 0 then
 			return true
