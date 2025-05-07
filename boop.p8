@@ -53,6 +53,7 @@ gamestarted = false
 gameover = 0
 multicontrollers = false
 menulabel = "2 controllers"
+animations = {}
 -->8
 function _init()
 	color(17)
@@ -72,6 +73,7 @@ function _draw()
 	drawui()
 	drawsplash()
 	drawgameover()
+	runanimation()
 end
 -->8
 function drawplayer()
@@ -224,6 +226,7 @@ function startgame()
 	if gamestarted == false then
 		restartgame()
 		gamestarted = true
+		animate = true
 	end
 end
 
@@ -277,6 +280,9 @@ function moveplayer()
 		end
 	end
 	if btnp(4,controller) then
+		if #animations > 0 then
+			return
+		end
 		if gamestarted == false then
 			startgame()
 		else
@@ -361,6 +367,17 @@ function fillmtx()
 	end
 end
 
+function checkandpromote()
+	local p1 = check3(p1k, p1c)
+	if #p1 == 3 then
+		promote(p1,1)
+	end
+	local p2 = check3(p2k, p2c)
+	if #p2 == 3 then
+		promote(p2,2)
+	end
+end
+
 function placepiece()
 	local piece
 	if activeplayer.cursortype == 'k' then
@@ -372,14 +389,7 @@ function placepiece()
 		mtx[player.x][player.y] = piece
 		removepiece()
 		checkboop()
-		local p1 = check3(p1k, p1c)
-		if #p1 == 3 then
-			promote(p1,1)
-		end
-		local p2 = check3(p2k, p2c)
-		if #p2 == 3 then
-			promote(p2,2)
-		end
+		checkandpromote()
 	end
 	if activeplayer.maxcats == 8 and
 				activeplayer.cats == 0 then
@@ -554,17 +564,91 @@ function checkboop()
 	end
 end
 
+function runanimation()
+	local speed = 1
+	for i = 1, #animations do
+		local a = animations[i]
+		if a == nil then
+			return
+		end
+		local xfactor = 1
+		local yfactor = 1
+		if a.sx < a.fx then
+			xfactor = 1
+	 elseif a.sx > a.fx then
+	  xfactor = -1
+	 else
+	 	xfactor = 0
+	 end
+	 if a.sy < a.fy then
+			yfactor = 1
+	 elseif a.sy > a.fy then
+	  yfactor = -1
+	 else
+	 	yfactor = 0
+	 end
+	 a.sx = a.sx + (speed*xfactor)
+	 a.sy = a.sy + (speed*yfactor)
+	 local condition = false
+	 condition = a.fx == a.sx and a.sy == a.fy
+	 if condition == false then
+	 	drawanimation(a)
+		else
+			if a.place == true then
+				mtx[a.x][a.y] = a.piece
+				checkandpromote()
+			end
+			del(animations, a)
+		end
+	end
+end
+
+function drawanimation(a)
+	local s = nil
+	if a.piece == p1k then
+		s = spr_k1
+	elseif a.piece == p1c then
+		s = spr_c1
+	elseif a.piece == p2k then
+		s = spr_k2
+	elseif a.piece == p2c then
+		s = spr_c2
+	end
+ spr(
+		s,
+	 a.sx,
+		a.sy,
+		2,
+		2
+	)
+end
+
+function addanimation(psx,psy,pfx,pfy,p,placepiece)
+	local obj = {
+		sx = centerx + space + (psx*size),
+		sy = centery + space + (psy*size),
+		fx = centerx + space + (pfx*size),
+		fy = centery + space + (pfy*size),
+		x = pfx,
+		y = pfy,
+		piece = p,
+		place = placepiece
+	}
+	add(animations,obj)
+end
+-->8
 function boop(dir,x,y,p)
 	if dir == 'r' then
 		local fx = x + 1
 		if	x < 5 then
 			if mtx[fx][y] == 0 then
 					mtx[x][y] = 0
-					mtx[fx][y] = p
+					addanimation(x,y,fx,y,p,true)
 			end
 		elseif x == 5 then
 			addpiece(mtx[x][y])
 			mtx[x][y] = 0
+			addanimation(x,y,fx,y,p,false)
 			addpiece()
 		end
 	end
@@ -573,11 +657,12 @@ function boop(dir,x,y,p)
 		if	x > 0 then
 			if mtx[fx][y] == 0 then
 					mtx[x][y] = 0
-					mtx[fx][y] = p
+					addanimation(x,y,fx,y,p,true)
 			end
 		elseif x == 0 then
 			addpiece(mtx[x][y])
 			mtx[x][y] = 0
+			addanimation(x,y,fx,y,p,false)
 		end
 	end
 	if dir == 'd' then
@@ -585,11 +670,12 @@ function boop(dir,x,y,p)
 		if	y < 5 then
 			if mtx[x][fy] == 0 then
 					mtx[x][y] = 0
-					mtx[x][fy] = p
+					addanimation(x,y,x,fy,p,true)
 			end
 		elseif y == 5 then
 			addpiece(mtx[x][y])
 			mtx[x][y] = 0
+			addanimation(x,y,x,fy,p,false)
 		end
 	end
 	if dir == 'u' then
@@ -597,11 +683,12 @@ function boop(dir,x,y,p)
 		if	y > 0 then
 			if mtx[x][fy] == 0 then
 					mtx[x][y] = 0
-					mtx[x][fy] = p
+					addanimation(x,y,x,fy,p,true)
 			end
 		elseif y == 0 then
 			addpiece(mtx[x][y])
 			mtx[x][y] = 0
+			addanimation(x,y,x,fy,p,false)
 		end
 	end
 	if dir == 'ur' then
@@ -610,24 +697,27 @@ function boop(dir,x,y,p)
 		if	y > 0 and x < 5 then
 			if mtx[fx][fy] == 0 then
 					mtx[x][y] = 0
-					mtx[fx][fy] = p
+					addanimation(x,y,fx,fy,p,true)
 			end
 		elseif fy <= 0 or fx >= 5 then
 			addpiece(mtx[x][y])
 			mtx[x][y] = 0
+			addanimation(x,y,fx,fy,p,false)
 		end
 	end
 	if dir == 'ul' then
 		local fy = y - 1
 		local fx = x - 1
+		debug = x .. ' ' .. y
 		if	y > 0 and x > 0 then
 			if mtx[fx][fy] == 0 then
 					mtx[x][y] = 0
-					mtx[fx][fy] = p
+					addanimation(x,y,fx,fy,p,true)
 			end
-		elseif fy <= 0 or fx >= 0 then
+		elseif fy <= 0 or fx <= 0 then
 			addpiece(mtx[x][y])
 			mtx[x][y] = 0
+			addanimation(x,y,fx,fy,p,false)
 		end
 	end
 	if dir == 'dr' then
@@ -636,11 +726,12 @@ function boop(dir,x,y,p)
 		if	y < 5 and x < 5 then
 			if mtx[fx][fy] == 0 then
 					mtx[x][y] = 0
-					mtx[fx][fy] = p
+					addanimation(x,y,fx,fy,p,true)
 			end
-		elseif fy > 5 or fx >= 5 then
+		elseif fy >= 5 or fx >= 5 then
 			addpiece(mtx[x][y])
 			mtx[x][y] = 0
+			addanimation(x,y,fx,fy,p,false)
 		end
 	end
 	if dir == 'dl' then
@@ -649,15 +740,16 @@ function boop(dir,x,y,p)
 		if	y < 5 and x > 0 then
 			if mtx[fx][fy] == 0 then
 					mtx[x][y] = 0
-					mtx[fx][fy] = p
+					addanimation(x,y,fx,fy,p,true)
 			end
-		elseif fy > 5 or fx <= 0 then
+		elseif fy >= 5 or fx <= 0 then
 			addpiece(mtx[x][y])
 			mtx[x][y] = 0
+			addanimation(x,y,fx,fy,p,false)
 		end
 	end
 end
--->8
+
 function check3(p1, p2)
 	local cols, rows = 5,5
 	for x = 0, rows do
