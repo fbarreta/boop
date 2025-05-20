@@ -487,7 +487,7 @@ function checkboop()
 			local p = mtx[player.x+1][player.y]
 			if canboop(o, p) then
 				playboopsound = true
-				//boop('r',player.x+1, player.y,p)
+				boop('r',player.x+1, player.y,p)
 			end
 	end
 	if
@@ -496,7 +496,7 @@ function checkboop()
 			local p = mtx[player.x-1][player.y]
 			if canboop(o, p) then
 				playboopsound = true
-				//boop('l',player.x-1, player.y,p)
+				boop('l',player.x-1, player.y,p)
 			end
 	end
 	if
@@ -505,7 +505,7 @@ function checkboop()
 			local p = mtx[player.x][player.y+1]
 			if canboop(o, p) then
 				playboopsound = true
-				//boop('d',player.x, player.y+1,p)
+				boop('d',player.x, player.y+1,p)
 			end
 	end
 	if
@@ -514,7 +514,7 @@ function checkboop()
 			local p = mtx[player.x][player.y-1]
 			if canboop(o, p) then
 				playboopsound = true
-				//boop('u',player.x, player.y-1,p)
+				boop('u',player.x, player.y-1,p)
 			end
 	end
 	if
@@ -524,7 +524,7 @@ function checkboop()
 			local p = mtx[player.x+1][player.y-1]
 			if canboop(o, p) then
 				playboopsound = true
-				//boop('ur',player.x+1, player.y-1,p)
+				boop('ur',player.x+1, player.y-1,p)
 			end
 	end
 	if
@@ -534,7 +534,7 @@ function checkboop()
 			local p = mtx[player.x-1][player.y-1]
 			if canboop(o, p) then
 				playboopsound = true
-				//boop('ul',player.x-1, player.y-1,p)
+				boop('ul',player.x-1, player.y-1,p)
 			end
 	end
 	if
@@ -544,7 +544,7 @@ function checkboop()
 			local p = mtx[player.x+1][player.y+1]
 			if canboop(o, p) then
 				playboopsound = true
-				//boop('dr',player.x+1, player.y+1,p)
+				boop('dr',player.x+1, player.y+1,p)
 			end
 	end
 	if
@@ -554,7 +554,7 @@ function checkboop()
 			local p = mtx[player.x-1][player.y+1]
 			if canboop(o, p) then
 				playboopsound = true
-				//boop('dl',player.x-1, player.y+1,p)
+				boop('dl',player.x-1, player.y+1,p)
 			end
 	end
 	if playboopsound == true then
@@ -754,28 +754,28 @@ function check3(p1, p2)
 	local cols, rows = 5,5
 	for x = 0, rows do
 		for y = 0, cols do
-			if y + 1 <= cols then
+			if y + 1 < cols then
 				if (mtx[x][y] == p1 or mtx[x][y] == p2) and
 							(mtx[x][y+1] == p1 or mtx[x][y+1] == p2) and
 							(mtx[x][y+2] == p1 or mtx[x][y+2] == p2) then
 								return {{x, y},{x,y+1},{x,y+2}}
 				end
 			end
-			if x + 1 <= rows then
+			if x + 1 < rows then
 				if (mtx[x][y] == p1 or mtx[x][y] == p2) and
 							(mtx[x+1][y] == p1 or mtx[x+1][y] == p2) and
 							(mtx[x+2][y] == p1 or mtx[x+2][y] == p2) then
 								return {{x, y},{x+1,y},{x+2,y}}
 				end
 			end
-			if x + 1 <= rows and y + 2 <= cols then
+			if x + 1 < rows and y + 2 <= cols then
 				if (mtx[x][y] == p1 or mtx[x][y] == p2) and
 							(mtx[x+1][y+1] == p1 or mtx[x+1][y+1] == p2) and
 							(mtx[x+2][y+2] == p1 or mtx[x+2][y+2] == p2) then
 								return {{x, y},{x+1,y+1},{x+2,y+2}}
 				end
 			end
-			if x + 1 <= rows and y - 2 >= 0 then
+			if x + 1 < rows and y - 2 >= 0 then
 				if (mtx[x][y] == p1 or mtx[x][y] == p2) and
 							(mtx[x+1][y-1] == p1 or mtx[x+1][y-1] == p2) and
 							(mtx[x+2][y-2] == p1 or mtx[x+2][y-2] == p2) then
